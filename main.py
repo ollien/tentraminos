@@ -1,7 +1,7 @@
 import curses
 import tetris
 
-# print tetris.Piece(6).coords
+
 
 #init curses
 screen = curses.initscr()
@@ -13,7 +13,7 @@ screen.keypad(1)
 
 window = curses.newwin(25,80,0,0)
 window.keypad(1)
-panel = curses.newpad(22,10)
+panel = curses.newpad(22,20)
 height,width = panel.getmaxyx()
 
 #Color codes are associated with piece codes + 1
@@ -30,12 +30,11 @@ piece = 1
 t = tetris.Piece(piece)
 while True:
 	panel.clear()
-	for i in range(height):
-		for j in range(width):
-			for item in t.coords:
-				if item[0] == j and item[1] == i:
-					panel.move(i,j)
-					panel.addstr(" ",curses.color_pair(piece+1))
+	drawableCoords = t.getDrawableCoords()
+	for item in drawableCoords:
+		if item[0] < width and item[0] >=0 and item[1] < height and item[1] >= 0:
+			panel.move(item[1],item[0])
+			panel.addstr(" ",curses.color_pair(piece+1))
 	screen.refresh()
 	window.refresh()
 	panel.refresh(0,0,0,0,height,width)

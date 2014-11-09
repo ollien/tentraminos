@@ -1,5 +1,6 @@
 import random
 
+
 class Piece(object):
 	def __init__(self,piece=None):
 		self.piece = piece
@@ -72,6 +73,21 @@ class Piece(object):
 			self.coords.append((1,0))
 			self.coords += [(i,1) for i in range(3)]
 			self.origin = 2
+	def getDrawableCoords(self):
+		result = []
+		xMap = {}
+		for item in self.coords:
+			if item[1] not in xMap:
+				xMap[item[1]] = [item[0]]
+			else:
+				xMap[item[1]].append(item[0])
+		for item in xMap:
+			xMin = min(xMap[item])
+			if xMin > 0:
+				xMin *=2
+			for i in range(xMin,xMin+len(xMap[item])*2):
+				result.append((i,item))
+		return result
 	def getOrigin(self):
 		return self.coords[self.origin]
 	def inBounds(self,coords):
@@ -79,7 +95,7 @@ class Piece(object):
 		minY = min([item[1] for item in coords])
 		maxX = max([item[0] for item in coords])
 		maxY = max([item[1] for item in coords])
-		if minX>=0 and minY>=0 and maxX<22 and maxY>10:
+		if minX>=0 and minY>=0 and maxX<22 and maxY<10:
 			return True
 		return False
 	def rotateLeft(self):
