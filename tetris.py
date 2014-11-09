@@ -94,7 +94,7 @@ class Piece(object):
 		minY = min([item[1] for item in coords])
 		maxX = max([item[0] for item in coords])
 		maxY = max([item[1] for item in coords])
-		if minX>=0 and minY>=0 and maxX<10 and maxY<22:
+		if minX>=0 and minY>=0 and maxX<10 and maxY<20:
 			return True
 		return False
 	def rotateLeft(self):
@@ -109,8 +109,6 @@ class Piece(object):
 		origin = self.getOrigin()
 		coordsResult = [((item[0]-origin[0])*-1, (item[1]-origin[1])*-1) for item in self.coords]
 		coordsResult = [((item[1]+origin[0]),(item[0]*-1+origin[1])) for item in coordsResult]
-		minX = min([item[0] for item in coordsResult])
-		minY = min([item[1] for item in coordsResult])
 		if self.inBounds(coordsResult):
 			self.coords = coordsResult
 	def moveLeft(self):
@@ -121,3 +119,9 @@ class Piece(object):
 		m = max([item[0] for item in self.coords])+1
 		if m<10:
 			self.coords = [(item[0]+1,item[1]) for item in self.coords]
+	def moveDown(self):
+		m = max([item[1] for item in self.coords])+1
+		if m<20:
+			self.coords = [(item[0],item[1]+1) for item in self.coords]
+	def getMoveDownCoords(self):
+		return [(item[0],item[1]+1) for item in self.coords]
