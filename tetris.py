@@ -1,6 +1,5 @@
 import random
 
-
 class Piece(object):
 	def __init__(self,piece=None):
 		self.piece = piece
@@ -95,7 +94,7 @@ class Piece(object):
 		minY = min([item[1] for item in coords])
 		maxX = max([item[0] for item in coords])
 		maxY = max([item[1] for item in coords])
-		if minX>=0 and minY>=0 and maxX<22 and maxY<10:
+		if minX>=0 and minY>=0 and maxX<10 and maxY<22:
 			return True
 		return False
 	def rotateLeft(self):
@@ -119,6 +118,6 @@ class Piece(object):
 		if m>0:
 			self.coords = [(item[0]-1,item[1]) for item in self.coords]
 	def moveRight(self):	
-		m = min([item[0] for item in self.coords])
-		if m<22:
+		m = max([item[0] for item in self.coords])+1
+		if m<10:
 			self.coords = [(item[0]+1,item[1]) for item in self.coords]
