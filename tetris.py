@@ -97,28 +97,36 @@ class Piece(object):
 		if minX>=0 and minY>=0 and maxX<10 and maxY<20:
 			return True
 		return False
-	def rotateLeft(self):
+	def getRotateLeftCoords(self):
 		origin = self.getOrigin()
 		coordsResult = [((item[0]-origin[0])*-1, (item[1]-origin[1])*-1) for item in self.coords]
 		coordsResult = [((item[1]*-1+origin[0]),(item[0]+origin[1])) for item in coordsResult]
+		return coordsResult
+	def rotateLeft(self):
+		coordsResult = self.getRotateLeftCoords()
 		if self.inBounds(coordsResult):
 			self.coords = coordsResult
-		# if m<0:
-		# 	self.coords = [(item[0]-m,item[1]) for item in self.coords]
-	def rotateRight(self):
+	def getRotateRightCoords(self):
 		origin = self.getOrigin()
 		coordsResult = [((item[0]-origin[0])*-1, (item[1]-origin[1])*-1) for item in self.coords]
 		coordsResult = [((item[1]+origin[0]),(item[0]*-1+origin[1])) for item in coordsResult]
+		return coordsResult
+	def rotateRight(self):
+		coordsResult = self.getRotateRightCoords()
 		if self.inBounds(coordsResult):
 			self.coords = coordsResult
 	def moveLeft(self):
 		m = min([item[0] for item in self.coords])
 		if m>0:
 			self.coords = [(item[0]-1,item[1]) for item in self.coords]
+	def getMoveLeftCoords(self):
+		return [(item[0]-1,item[1]) for item in self.coords]
 	def moveRight(self):	
 		m = max([item[0] for item in self.coords])+1
 		if m<10:
 			self.coords = [(item[0]+1,item[1]) for item in self.coords]
+	def getMoveRightCoords(self):
+		return [(item[0]+1,item[1]) for item in self.coords]
 	def moveDown(self):
 		m = max([item[1] for item in self.coords])+1
 		if m<20:

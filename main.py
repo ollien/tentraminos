@@ -2,6 +2,9 @@ import curses
 import tetris
 from threading import Timer
 from time import sleep
+from sys import exit
+import traceback
+f = open("/Users/Nick/Desktop/tetrislog.txt",'w')
 #init curses
 screen = curses.initscr()
 curses.noecho()
@@ -10,9 +13,11 @@ curses.start_color()
 curses.curs_set(0)
 screen.keypad(1)
 screen.nodelay(1)
+screen.scrollok(1)
 window = curses.newwin(25,80,0,0)
 window.nodelay(1)
 window.keypad(1)
+window.scrollok(1)
 panel = curses.newpad(20,20)
 height,width = panel.getmaxyx()
 
@@ -31,50 +36,100 @@ class Game():
 	def __init__(self):
 		self.pieces = []
 		self.currentPiece = None
-		self.timer = Timer(1,self.gravityCallback)
+		self.timer = Timer(.5 ,self.gravityCallback)
 	def run(self):
 		self.generatePiece()
 		self.timer.start()
-		while True:
-			panel.clear()
-			for piece in self.pieces:
-				drawableCoords = piece.getDrawableCoords()
-				for item in drawableCoords:
-					if item[0] < width and item[0] >=0 and item[1] < height and item[1] >= 0:
-						panel.move(item[1],item[0])
-						panel.addstr(" ",curses.color_pair(piece.piece+1))
-			self.refresh()
-			c = window.getch()
-			if c==ord('q'):
-				self.currentPiece.rotateLeft()
-			elif c==ord('e'):
-				self.currentPiece.rotateRight()
-			elif c==ord('a'):
-				self.currentPiece.moveLeft()
-			elif c==ord('d'):
-				self.currentPiece.moveRight()
-			sleep(1.0/60)
+		try:
+			while True:
+				panel.clear()
+				for piece in self.pieces:
+					drawableCoords = piece.getDrawableCoords()
+					for item in drawableCoords:
+						if item[0] < width and item[0] >=0 and item[1] < height and item[1] >= 0:
+							panel.move(item[1],item[0])
+							f.write(str(item[0])+" "+str(item[1])+"\n")
+							f.flush()
+							try:
+								panel.addstr(" ",curses.color_pair(piece.piece+1))
+							except curses.error:
+								pass
+				self.refresh()
+				c = window.getch()
+				if c==ord('q'):
+					if self.isValidRotation(self.currentPiece.getRotateLeftCoords()):
+						self.currentPiece.rotateLeft()
+				elif c==ord('e'):
+					if self.isValidRotation(self.currentPiece.getRotateRightCoords()):
+						self.currentPiece.rotateRight()
+				elif c==ord('a'):
+					if self.isValidLeftMove(self.currentPiece.getMoveLeftCoords()):
+						self.currentPiece.moveLeft()
+				elif c==ord('d'):
+					if self.isValidRightMove(self.currentPiece.getMoveRightCoords()):
+						self.currentPiece.moveRight()
+				sleep(1.0/45)
+		except Exception, e:
+			f.write(str(e)+"\n")
+			f.write(str(traceback.format_exc())+"\n")
+			f.flush()
+			print str(e)
+			self.timer.cancel()
+			return
 	def refresh(self):
-		screen.refresh()
-		window.refresh()
-		panel.refresh(0,0,0,0,height,width)
+		# return False
+		screen.noutrefresh()
+		window.noutrefresh()
+		panel.noutrefresh(0,0,0,0,height,width)
+		curses.doupdate()
 	def generatePiece(self):
 		p = tetris.Piece()
 		self.pieces.append(p)
 		self.currentPiece = p
+	def isValidLeftMove(self,piece):
+		xMin = min(piece, key=lambda x: x[0])
+		for item in self.pieces:
+			if item!=self.currentPiece and item!=piece:
+				if xMin in item.coords:
+					return False
+		return True
+	def isValidRightMove(self,piece):
+		xMax = max(piece, key=lambda x: x[0])
+		for item in self.pieces:
+			if item!=self.currentPiece and item!=piece:
+				if xMax in item.coords:
+					return False
+		return True
+	def isValidRotation(self,piece):
+		for coord in piece:
+			for p in self.pieces:
+				if p != self.currentPiece and p!=piece:
+					if coord in p.coords:
+						return False
+		return True
 	def checkValidGravity(self):
 		for piece in self.pieces:
 			if piece != self.currentPiece:
-				for coord in self.currentPiece.getDownCoords():
-					if coord in piece: 
+				for coord in self.currentPiece.getMoveDownCoords():
+					if coord in piece.coords: 
 						return False
 		return True
+	def isOnBottom(self,piece):
+		c = piece.getMoveDownCoords()
+		if max([item[1] for item in piece.coords])==19:
+			return True
+		return False
+				
 	def gravityCallback(self):
 		if self.currentPiece!=None:
-			if self.checkValidGravity():
+			if self.isOnBottom(self.currentPiece):
+				self.generatePiece()
+			elif self.checkValidGravity():
 				self.currentPiece.moveDown()
 				self.refresh()
-		self.timer = Timer(1,self.gravityCallback)
+			else:
+				self.generatePiece()
+		self.timer = Timer(.5,self.gravityCallback)
 		self.timer.start()
 		
 g = Game()
