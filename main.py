@@ -4,6 +4,7 @@ from threading import Timer
 from time import sleep
 from sys import exit
 import traceback
+f = open('/Users/Nick/Desktop/tetrislog.txt','w')
 #init curses
 screen = curses.initscr()
 curses.noecho()
@@ -72,6 +73,8 @@ class Game():
 				sleep(1.0/45)
 		except Exception, e:
 			print str(e)
+			f.write(traceback.format_exc())
+			f.flush()
 			self.timer.cancel()
 			return
 	def refresh(self):
@@ -109,11 +112,11 @@ class Game():
 					if coord in p.coords:
 						return False
 		return True
-	def checkValidGravity(self):
-		for piece in self.pieces:
-			if piece != self.currentPiece:
-				for coord in self.currentPiece.getMoveDownCoords():
-					if coord in piece.coords: 
+	def checkValidGravity(self,piece):
+		for p in self.pieces:
+			if p != piece:
+				for coord in piece.getMoveDownCoords():
+					if coord in p.coords: 
 						return False
 		return True
 	def isOnBottom(self,piece):
@@ -126,24 +129,56 @@ class Game():
 		if self.currentPiece!=None:
 			if self.isOnBottom(self.currentPiece):
 				self.generatePiece()
-			elif self.checkValidGravity():
+			elif self.checkValidGravity(self.currentPiece):
 				self.currentPiece.moveDown()
 				self.refresh()
 			else:
 				self.generatePiece()
+		self.checkRow()
 		self.timer = Timer(.5,self.gravityCallback)
 		self.timer.start()
 	def getUpAndSlam(self): #Slam function
-		while not self.isOnBottom(self.currentPiece) and self.checkValidGravity():
+		while not self.isOnBottom(self.currentPiece) and self.checkValidGravity(self.currentPiece):
 			self.currentPiece.moveDown()
 		self.generatePiece()
 		self.refresh()
 		return False
 	def downFast(self):
 		if self.currentPiece != None:
-			if not self.isOnBottom(self.currentPiece) and self.checkValidGravity():
+			if not self.isOnBottom(self.currentPiece) and self.checkValidGravity(self.currentPiece):
 				self.currentPiece.moveDown()	
 				self.refresh()
+	def checkRow(self):
+		try:
+			rows = {}
+			for piece in self.pieces:
+				c = sorted(piece.coords, key=lambda x:x[1])
+				for item in c:
+					if item[1] not in rows:
+						rows[item[1]]=[]
+					rows[item[1]].append(item[0])
+			for item in rows:
+				rows[item].sort()
+				if rows[item]==range(10):
+					for piece in self.pieces:
+						removed = False
+						for i in range(10):
+							if (i,item) in piece.coords:
+								piece.coords.remove((i,item))
+								if len(piece.coords)==0:
+									self.pieces.remove(piece)
+					for i in range(len(self.pieces)):
+						for j in range(len(self.pieces[i].coords)):
+							if self.pieces[i].coords[j][1]<=item:
+								self.pieces[i].coords[j] = (self.pieces[i].coords[j][0],self.pieces[i].coords[j][1]+1)
+							
+			#TODO: add white flash on removal
+			self.refresh()
+		except Exception,e:
+			f.write(traceback.format_exc())
+			f.flush()
+						
+				
 			
 g = Game()
 g.run()
