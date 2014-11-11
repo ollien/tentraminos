@@ -4,7 +4,6 @@ from threading import Timer
 from time import sleep
 from sys import exit
 import traceback
-f = open("/Users/Nick/Desktop/tetrislog.txt",'w')
 #init curses
 screen = curses.initscr()
 curses.noecho()
@@ -48,8 +47,6 @@ class Game():
 					for item in drawableCoords:
 						if item[0] < width and item[0] >=0 and item[1] < height and item[1] >= 0:
 							panel.move(item[1],item[0])
-							f.write(str(item[0])+" "+str(item[1])+"\n")
-							f.flush()
 							try:
 								panel.addstr(" ",curses.color_pair(piece.piece+1))
 							except curses.error:
@@ -68,11 +65,12 @@ class Game():
 				elif c==ord('d'):
 					if self.isValidRightMove(self.currentPiece.getMoveRightCoords()):
 						self.currentPiece.moveRight()
+				elif c==ord('s'):
+					self.downFast()
+				elif c==ord(' '):
+					self.getUpAndSlam()
 				sleep(1.0/45)
 		except Exception, e:
-			f.write(str(e)+"\n")
-			f.write(str(traceback.format_exc())+"\n")
-			f.flush()
 			print str(e)
 			self.timer.cancel()
 			return
@@ -87,18 +85,22 @@ class Game():
 		self.pieces.append(p)
 		self.currentPiece = p
 	def isValidLeftMove(self,piece):
-		xMin = min(piece, key=lambda x: x[0])
+		xMin = min([item[0] for item in piece])
+		xMins = [item for item in piece if item[0]==xMin]
 		for item in self.pieces:
 			if item!=self.currentPiece and item!=piece:
-				if xMin in item.coords:
-					return False
+				for item2 in xMins:
+					if item2 in item.coords:
+						return False
 		return True
 	def isValidRightMove(self,piece):
-		xMax = max(piece, key=lambda x: x[0])
+		xMax = max([item[0] for item in piece])
+		xMaxes = [item for item in piece if item[0]==xMax]
 		for item in self.pieces:
 			if item!=self.currentPiece and item!=piece:
-				if xMax in item.coords:
-					return False
+				for item2 in xMaxes:
+					if item2 in item.coords:
+						return False
 		return True
 	def isValidRotation(self,piece):
 		for coord in piece:
@@ -131,7 +133,18 @@ class Game():
 				self.generatePiece()
 		self.timer = Timer(.5,self.gravityCallback)
 		self.timer.start()
-		
+	def getUpAndSlam(self): #Slam function
+		while not self.isOnBottom(self.currentPiece) and self.checkValidGravity():
+			self.currentPiece.moveDown()
+		self.generatePiece()
+		self.refresh()
+		return False
+	def downFast(self):
+		if self.currentPiece != None:
+			if not self.isOnBottom(self.currentPiece) and self.checkValidGravity():
+				self.currentPiece.moveDown()	
+				self.refresh()
+			
 g = Game()
 g.run()
 curses.nocbreak()
