@@ -126,6 +126,7 @@ class Game():
 		return False
 				
 	def gravityCallback(self):
+		self.checkRow()
 		if self.currentPiece!=None:
 			if self.isOnBottom(self.currentPiece):
 				self.generatePiece()
@@ -133,14 +134,14 @@ class Game():
 				self.currentPiece.moveDown()
 				self.refresh()
 			else:
-				self.generatePiece()
-		self.checkRow()
+				self.generatePiece()		
 		self.timer = Timer(.5,self.gravityCallback)
 		self.timer.start()
 	def getUpAndSlam(self): #Slam function
 		while not self.isOnBottom(self.currentPiece) and self.checkValidGravity(self.currentPiece):
 			self.currentPiece.moveDown()
-		self.generatePiece()
+		self.timer.cancel()
+		self.gravityCallback()
 		self.refresh()
 		return False
 	def downFast(self):
@@ -171,7 +172,6 @@ class Game():
 						for j in range(len(self.pieces[i].coords)):
 							if self.pieces[i].coords[j][1]<=item:
 								self.pieces[i].coords[j] = (self.pieces[i].coords[j][0],self.pieces[i].coords[j][1]+1)
-							
 			#TODO: add white flash on removal
 			self.refresh()
 		except Exception,e:
