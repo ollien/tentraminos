@@ -249,14 +249,20 @@ class Game():
 					if c==coord:
 						return False
 		return True
-				
-g = Game()
-g.run()
-curses.nocbreak()
-screen.keypad(0)
-window.keypad(0)
-window.scrollok(0)
-curses.curs_set(1)
-curses.echo()
-curses.endwin()
-exit(0)
+try:		
+	g = Game()
+	g.run()
+except Exception, e:
+	if debug:
+		f.write(traceback.format_exc())
+		f.flush()
+finally:
+	window.keypad(0)
+	window.scrollok(0)
+	curses.echo()
+	curses.nocbreak()
+	screen.keypad(0)
+	curses.curs_set(1)
+	del window
+	del screen
+	curses.endwin()
