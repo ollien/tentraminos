@@ -1,7 +1,7 @@
 import random
 
 class Piece(object):
-	def __init__(self,piece=None):
+	def __init__(self,piece=None,xOffset=0,yOffset=0):
 		self.piece = piece
 		if self.piece==None or self.piece > 6 or self.piece < 0:
 			self.piece=random.randint(0,6)
@@ -72,6 +72,8 @@ class Piece(object):
 			self.coords.append((1,0))
 			self.coords += [(i,1) for i in range(3)]
 			self.origin = 2
+		self.coords = [(item[0]+xOffset,item[1]+yOffset) for item in self.coords]
+			
 	def getDrawableCoords(self):
 		result = []
 		xMap = {}
@@ -87,6 +89,8 @@ class Piece(object):
 			for i in range(xMin,xMin+len(xMap[item])*2):
 				result.append((i,item))
 		return result
+	def hasCoords(self):
+		return len(self.coords)>0
 	def getOrigin(self):
 		return self.coords[self.origin]
 	def inBounds(self,coords):
@@ -98,38 +102,48 @@ class Piece(object):
 			return True
 		return False
 	def getRotateLeftCoords(self):
-		origin = self.getOrigin()
-		coordsResult = [((item[0]-origin[0])*-1, (item[1]-origin[1])*-1) for item in self.coords]
-		coordsResult = [((item[1]*-1+origin[0]),(item[0]+origin[1])) for item in coordsResult]
-		return coordsResult
+		if self.hasCoords():
+			origin = self.getOrigin()
+			coordsResult = [((item[0]-origin[0])*-1, (item[1]-origin[1])*-1) for item in self.coords]
+			coordsResult = [((item[1]*-1+origin[0]),(item[0]+origin[1])) for item in coordsResult]
+			return coordsResult
 	def rotateLeft(self):
-		coordsResult = self.getRotateLeftCoords()
-		if self.inBounds(coordsResult):
-			self.coords = coordsResult
+		if self.hasCoords():
+			coordsResult = self.getRotateLeftCoords()
+			if self.inBounds(coordsResult):
+				self.coords = coordsResult
 	def getRotateRightCoords(self):
-		origin = self.getOrigin()
-		coordsResult = [((item[0]-origin[0])*-1, (item[1]-origin[1])*-1) for item in self.coords]
-		coordsResult = [((item[1]+origin[0]),(item[0]*-1+origin[1])) for item in coordsResult]
-		return coordsResult
+		if self.hasCoords():
+			origin = self.getOrigin()
+			coordsResult = [((item[0]-origin[0])*-1, (item[1]-origin[1])*-1) for item in self.coords]
+			coordsResult = [((item[1]+origin[0]),(item[0]*-1+origin[1])) for item in coordsResult]
+			return coordsResult
 	def rotateRight(self):
-		coordsResult = self.getRotateRightCoords()
-		if self.inBounds(coordsResult):
-			self.coords = coordsResult
+		if self.hasCoords():
+			coordsResult = self.getRotateRightCoords()
+			if self.inBounds(coordsResult):
+				self.coords = coordsResult
 	def moveLeft(self):
-		m = min([item[0] for item in self.coords])
-		if m>0:
-			self.coords = [(item[0]-1,item[1]) for item in self.coords]
+		if self.hasCoords():
+			m = min([item[0] for item in self.coords])
+			if m>0:
+				self.coords = [(item[0]-1,item[1]) for item in self.coords]
 	def getMoveLeftCoords(self):
-		return [(item[0]-1,item[1]) for item in self.coords]
+		if self.hasCoords():
+			return [(item[0]-1,item[1]) for item in self.coords]
 	def moveRight(self):	
-		m = max([item[0] for item in self.coords])+1
-		if m<10:
-			self.coords = [(item[0]+1,item[1]) for item in self.coords]
+		if self.hasCoords():
+			m = max([item[0] for item in self.coords])+1
+			if m<10:
+				self.coords = [(item[0]+1,item[1]) for item in self.coords]
 	def getMoveRightCoords(self):
-		return [(item[0]+1,item[1]) for item in self.coords]
+		if self.hasCoords():
+			return [(item[0]+1,item[1]) for item in self.coords]
 	def moveDown(self):
-		m = max([item[1] for item in self.coords])+1
-		if m<20:
-			self.coords = [(item[0],item[1]+1) for item in self.coords]
+		if self.hasCoords():
+			m = max([item[1] for item in self.coords])+1
+			if m<20:
+				self.coords = [(item[0],item[1]+1) for item in self.coords]
 	def getMoveDownCoords(self):
-		return [(item[0],item[1]+1) for item in self.coords]
+		if self.hasCoords():
+			return [(item[0],item[1]+1) for item in self.coords]
